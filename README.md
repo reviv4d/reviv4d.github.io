@@ -1,2 +1,2 @@
-# reviv4d.github.io
+# ReViV: Reconstructing the Viewer and the View in 4D from Monocular Egocentric Video
 Coming Soon...
