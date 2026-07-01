@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="ReViV reconstructs the viewer and the view in 4D from a single monocular egocentric video."
+    />
+    <meta name="theme-color" content="#ffffff" />
+    <title>ReViV: Reconstructing the Viewer and the View in 4D from Monocular Egocentric Video</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="nav-container">
+        <a class="brand" href="#top">ReViV</a>
+        <nav aria-label="Primary navigation">
+          <a href="#overview">Overview</a>
+          <a href="#method">Method</a>
+          <a href="#experiments">Experiments</a>
+          <a href="#citation">Citation</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero page-container">
+        <h1>ReViV: Reconstructing the Viewer and the View in 4D from Monocular Egocentric Video</h1>
+
+        <div class="authors" aria-label="Authors">
+          <a href="https://vlg.inf.ethz.ch/team/Xiaozhong-Lyu.html"><strong>Xiaozhong Lyu</strong><sup>*</sup></a>
+          <a href="https://ligengen.github.io/">Gen Li<sup>*</sup></a>
+          <a href="https://vlg.inf.ethz.ch/team/Zhiyin-Qian.html">Zhiyin Qian</a>
+          <a href="https://xucong-zhang.github.io/">Xucong Zhang</a>
+          <a href="https://people.inf.ethz.ch/marc.pollefeys/">Marc Pollefeys</a>
+          <a href="https://vlg.inf.ethz.ch/team/Prof-Dr-Siyu-Tang.html">Siyu Tang</a>
+        </div>
+
+        <p class="affiliations">
+          <sup>*</sup>Equal contribution<br />
+          ETH Zürich &nbsp;&nbsp;·&nbsp;&nbsp; Delft University of Technology
+          &nbsp;&nbsp;·&nbsp;&nbsp; Microsoft
+        </p>
+        <p class="venue">European Conference on Computer Vision (ECCV), 2026</p>
+
+        <div class="link-row">
+          <!-- TODO: Replace with the public paper URL when available. -->
+          <span class="project-link disabled" aria-disabled="true">Paper (coming soon)</span>
+          <!-- TODO: Replace with the public code repository URL when available. -->
+          <span class="project-link disabled" aria-disabled="true">Code (coming soon)</span>
+          <a class="project-link" href="#citation">BibTeX</a>
+        </div>
+      </section>
+
+      <section class="content-section page-container teaser-video-section" aria-label="Teaser video">
+        <figure class="video-figure">
+          <video
+            src="video/teaser_reviv_gen.mp4"
+            controls
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="metadata"
+          ></video>
+          <figcaption>
+            ReViV reconstructs viewer-centric human motion and view-centric
+            scene geometry from a single egocentric RGB video in a unified feed-forward model.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="overview" class="content-section page-container">
+        <h2>Overview</h2>
+        <figure>
+          <img
+            src="assets/images/teaser-overview.png"
+            alt="Overview of ReViV reconstructing body, hand, gaze, camera trajectory, and depth from egocentric RGB video"
+          />
+          <figcaption>
+            We present <strong>ReViV</strong>, a unified framework for holistic egocentric 4D
+            reconstruction. Given a monocular egocentric RGB video, our method jointly estimates
+            human-centric modalities, including body pose, hand pose, and gaze, alongside
+            scene-aware camera trajectory and depth. These predictions are integrated into a
+            temporally consistent reconstruction of both the viewer and the view.
+          </figcaption>
+        </figure>
+
+        <h2>Abstract</h2>
+        <div class="paper-text">
+          <p>
+            Egocentric devices, such as wearable front-facing cameras, provide a unique
+            perspective for capturing the continuous interaction between a human viewer and the
+            surrounding environment. A holistic and efficient multimodal model capable of
+            reconstructing this 4D representation is therefore highly desirable. However,
+            existing approaches often rely on auxiliary inputs such as pre-computed camera
+            trajectories, treat scene perception and human ego-motion modeling as separate
+            problems despite their strong interdependency, and suffer from slow inference time.
+            To address these limitations, we present ReViV, the first unified framework for
+            holistic egocentric 4D reconstruction that extracts both viewer and view dynamics
+            from a single monocular RGB video. We formulate the task as learning the full joint
+            probability distribution over multimodal signals, including RGB video, camera
+            trajectory, gaze direction, full-body motion, hand motion, and depth. Powered by a
+            Masked Generative Egocentric Transformer, ReViV operates within a single feed-forward
+            architecture to simultaneously reconstruct the temporally consistent 4D
+            reconstruction across the viewer and the view with fast inference speed. Extensive
+            experiments on diverse benchmarks, including HoloAssist, HOT3D, ARCTIC, Aria Digital
+            Twin, and TACO, demonstrate that ReViV achieves state-of-the-art accuracy and
+            efficiency across holistic ego-body, hand, and gaze reconstruction, camera
+            tracking, while maintaining highly competitive egocentric depth estimation, without
+            relying on heavy task-specific priors.
+          </p>
+        </div>
+      </section>
+
+      <section id="method" class="content-section page-container">
+        <h2>Method</h2>
+        <figure>
+          <img
+            src="assets/images/method.png"
+            alt="ReViV architecture with modality-specific tokenizers, masked generative modeling, and multimodal reconstruction"
+            loading="lazy"
+          />
+          <figcaption>
+            <strong>ReViV architecture.</strong> Modality-specific VQ-VAEs discretize heterogeneous
+            viewer signals (gaze, hand, and body) and view signals (RGB, depth, and camera) into a
+            unified token sequence. A Masked Generative Egocentric Transformer (MGET) learns the
+            joint distribution by predicting randomly masked tokens, capturing both temporal
+            dynamics within each modality and correlations across modalities. During inference,
+            MGET conditions on the observed RGB tokens and iteratively reconstructs the unobserved
+            human and scene states. A lightweight floor-fitting stage aligns the viewer and the
+            view within a shared metric 4D coordinate system.
+          </figcaption>
+        </figure>
+
+        <div class="paper-text method-text">
+          <p>
+            We propose a unified framework to jointly reconstruct human-centric (gaze, body, hand
+            motion) and scene-centric (camera trajectories, depth maps) features from monocular
+            egocentric video. Because the viewer's body is heavily occluded in egocentric views,
+            deterministic estimation is inherently ambiguous. To address this, we formulate the
+            task as a generative modeling problem and approximate the multimodal joint
+            distribution through masked token prediction.
+          </p>
+          <p>
+            In practice, we approximate the joint distribution through masked multimodal token
+            prediction, which enables the model to learn both intra-modal temporal dynamics and
+            cross-modal correlations. During inference, the model samples the human and scene
+            states conditioned on the observed egocentric video.
+          </p>
+          <p>
+            Modeling the joint distribution in the continuous domain is challenging due to the
+            heterogeneity of the modalities, which range from dense pixel arrays to sparse
+            kinematic vectors. We therefore leverage a unified discrete latent interface to
+            homogenize the modalities. This discretization transforms the continuous regression
+            problem into a sequence modeling task defined over modality-specific discrete
+            vocabularies, ensuring that predictions for each modality remain constrained to their
+            respective codebook spaces.
+          </p>
+          <p>
+            Random multimodal masking serves as a multi-task training objective. By masking
+            partial sequences within a single modality, the network learns intra-modal motion
+            dynamics and strong temporal kinematic priors. By masking across different
+            modalities, the network learns robust cross-modal correlations. Together, these two
+            implicit tasks enable MGET to capture human kinematics and environment-conditioned
+            interaction patterns directly from the multimodal training distribution.
+          </p>
+          <p>
+            At inference time, the observed egocentric video context is provided as visible
+            tokens, while the human and scene state modalities are fully masked. We employ an
+            iterative parallel decoding strategy to progressively sample masked tokens,
+            reconstructing the complete, temporally coherent 4D state.
+          </p>
+          <p>
+            To achieve a metric-aligned 4D reconstruction, we introduce a lightweight alignment
+            step to map the relative scene depth into the metric domain. Specifically, we fit a
+            stable floor plane from the reconstructed scene geometry and use it to regularize the
+            metric scale. For RGB inputs that do not contain a visible floor, we leverage
+            off-the-shelf metric depth predictions from VIPE as an optional geometric anchor.
+            These alignment steps allow the reconstructed viewer and view to be placed within a
+            shared, metric-aligned 4D coordinate system.
+          </p>
+        </div>
+      </section>
+
+      <section id="experiments" class="content-section page-container">
+        <h2>Experiments</h2>
+        <p class="section-introduction">
+          We evaluate ReViV on five complementary egocentric reconstruction tasks. All experiments
+          use two-second clips. RGB and depth are processed at 8 FPS and 256 × 256 resolution,
+          while camera, gaze, body, and hand signals retain their original 30 FPS sampling rate.
+        </p>
+
+        <article class="experiment">
+          <h3>Egocentric Body Motion Reconstruction</h3>
+          <p>
+            We evaluate on 3,185 clips from the unseen Aria Digital Twin dataset and compare with
+            EgoAllo and UniEgoMotion. Unlike both baselines, ReViV uses only monocular RGB and does
+            not require an input camera trajectory. ReViV achieves the best local pose accuracy,
+            motion realism, and semantic correspondence in the comparison. It is approximately
+            100 times faster than EgoAllo and more than 10 times faster than UniEgoMotion. The
+            results show that jointly learning camera motion and body dynamics avoids errors that
+            accumulate when tracking and pose estimation are handled as separate stages.
+          </p>
+          <figure class="video-comparison body-examples">
+            <div class="body-example-group">
+              <h4>Body examples with VIPE camera input for baselines</h4>
+              <div class="body-example">
+                <h5>Example 1: baselines use RGB + VIPE camera; ReViV uses RGB only.</h5>
+                <div class="video-grid five-up">
+                  <div class="video-card"><video src="video/ppt-body/vipe-01-input.mp4" poster="assets/images/ppt-body-posters/vipe-01-input.png" controls muted loop playsinline preload="metadata"></video><p>Input RGB</p></div>
+                  <div class="video-card"><video src="video/ppt-body/vipe-01-egoallo.mp4" poster="assets/images/ppt-body-posters/vipe-01-egoallo.png" controls muted loop playsinline preload="metadata"></video><p>EgoAllo (RGB + VIPE camera)</p></div>
+                  <div class="video-card"><video src="video/ppt-body/vipe-01-uniegomotion.mp4" poster="assets/images/ppt-body-posters/vipe-01-uniegomotion.png" controls muted loop playsinline preload="metadata"></video><p>UniEgoMotion (RGB + VIPE camera)</p></div>
+                  <div class="video-card"><video src="video/ppt-body/vipe-01-ground-truth.mp4" poster="assets/images/ppt-body-posters/vipe-01-ground-truth.png" controls muted loop playsinline preload="metadata"></video><p>Ground Truth</p></div>
+                  <div class="video-card"><video src="video/ppt-body/vipe-01-ours.mp4" poster="assets/images/ppt-body-posters/vipe-01-ours.png" controls muted loop playsinline preload="metadata"></video><p>Ours (RGB only)</p></div>
+                </div>
+              </div>
+              <div class="body-example">
+                <h5>Example 2: baselines use RGB + VIPE camera; ReViV uses RGB only.</h5>
+                <div class="video-grid five-up">
+                  <div class="video-card"><video src="video/ppt-body/vipe-02-input.mp4" poster="assets/images/ppt-body-posters/vipe-02-input.png" controls muted loop playsinline preload="metadata"></video><p>Input RGB</p></div>
+                  <div class="video-card"><video src="video/ppt-body/vipe-02-egoallo.mp4" poster="assets/images/ppt-body-posters/vipe-02-egoallo.png" controls muted loop playsinline preload="metadata"></video><p>EgoAllo (RGB + VIPE camera)</p></div>
+                  <div class="video-card"><video src="video/ppt-body/vipe-02-uniegomotion.mp4" poster="assets/images/ppt-body-posters/vipe-02-uniegomotion.png" controls muted loop playsinline preload="metadata"></video><p>UniEgoMotion (RGB + VIPE camera)</p></div>
+                  <div class="video-card"><video src="video/ppt-body/vipe-02-ground-truth.mp4" poster="assets/images/ppt-body-posters/vipe-02-ground-truth.png" controls muted loop playsinline preload="metadata"></video><p>Ground Truth</p></div>
+                  <div class="video-card"><video src="video/ppt-body/vipe-02-ours.mp4" poster="assets/images/ppt-body-posters/vipe-02-ours.png" controls muted loop playsinline preload="metadata"></video><p>Ours (RGB only)</p></div>
+                </div>
+              </div>
+            </div>
+            <div class="body-example-group">
+              <h4>Body examples with ground-truth camera input for baselines</h4>
+              <div class="body-example">
+                <h5>Example 1: baselines use RGB + GT camera trajectory; ReViV uses RGB only.</h5>
+                <div class="video-grid five-up">
+                  <div class="video-card"><video src="video/ppt-body/gtcam-01-input.mp4" poster="assets/images/ppt-body-posters/gtcam-01-input.png" controls muted loop playsinline preload="metadata"></video><p>Input RGB</p></div>
+                  <div class="video-card"><video src="video/ppt-body/gtcam-01-egoallo.mp4" poster="assets/images/ppt-body-posters/gtcam-01-egoallo.png" controls muted loop playsinline preload="metadata"></video><p>EgoAllo (RGB + GT camera trajectory)</p></div>
+                  <div class="video-card"><video src="video/ppt-body/gtcam-01-uniegomotion.mp4" poster="assets/images/ppt-body-posters/gtcam-01-uniegomotion.png" controls muted loop playsinline preload="metadata"></video><p>UniEgoMotion (RGB + GT camera trajectory)</p></div>
+                  <div class="video-card"><video src="video/ppt-body/gtcam-01-ground-truth.mp4" poster="assets/images/ppt-body-posters/gtcam-01-ground-truth.png" controls muted loop playsinline preload="metadata"></video><p>Ground Truth</p></div>
+                  <div class="video-card"><video src="video/ppt-body/gtcam-01-ours.mp4" poster="assets/images/ppt-body-posters/gtcam-01-ours.png" controls muted loop playsinline preload="metadata"></video><p>Ours (RGB only)</p></div>
+                </div>
+              </div>
+              <div class="body-example">
+                <h5>Example 2: baselines use RGB + GT camera trajectory; ReViV uses RGB only.</h5>
+                <div class="video-grid five-up">
+                  <div class="video-card"><video src="video/ppt-body/gtcam-04-input.mp4" poster="assets/images/ppt-body-posters/gtcam-04-input.png" controls muted loop playsinline preload="metadata"></video><p>Input RGB</p></div>
+                  <div class="video-card"><video src="video/ppt-body/gtcam-04-egoallo.mp4" poster="assets/images/ppt-body-posters/gtcam-04-egoallo.png" controls muted loop playsinline preload="metadata"></video><p>EgoAllo (RGB + GT camera trajectory)</p></div>
+                  <div class="video-card"><video src="video/ppt-body/gtcam-04-uniegomotion.mp4" poster="assets/images/ppt-body-posters/gtcam-04-uniegomotion.png" controls muted loop playsinline preload="metadata"></video><p>UniEgoMotion (RGB + GT camera trajectory)</p></div>
+                  <div class="video-card"><video src="video/ppt-body/gtcam-04-ground-truth.mp4" poster="assets/images/ppt-body-posters/gtcam-04-ground-truth.png" controls muted loop playsinline preload="metadata"></video><p>Ground Truth</p></div>
+                  <div class="video-card"><video src="video/ppt-body/gtcam-04-ours.mp4" poster="assets/images/ppt-body-posters/gtcam-04-ours.png" controls muted loop playsinline preload="metadata"></video><p>Ours (RGB only)</p></div>
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              The first group uses VIPE camera trajectories as the baseline camera input; the
+              second group uses ground-truth camera trajectories for the baselines. ReViV is shown
+              with RGB-only input in both settings.
+            </figcaption>
+          </figure>
+        </article>
+
+        <article class="experiment">
+          <h3>Egocentric Hand Motion Reconstruction</h3>
+          <p>
+            We compare ReViV with HaMeR and Dyn-HaMR on HoloAssist, HOT3D, ARCTIC, and TACO. ReViV
+            achieves state-of-the-art local pose accuracy and global alignment across these
+            datasets while running approximately 100 times faster than HaMeR and more than 400
+            times faster than Dyn-HaMR. Its learned temporal priors produce plausible hand motion
+            through severe occlusion and intervals in which the hands are completely outside the
+            camera view.
+          </p>
+          <figure>
+            <img
+              src="assets/images/hand-results.png"
+              alt="ReViV hand reconstruction results under severe occlusion"
+              loading="lazy"
+            />
+            <figcaption>
+              ReViV generates temporally stable hand motion across sampled, non-consecutive
+              frames, including intervals where the hands are occluded or outside the field of
+              view.
+            </figcaption>
+          </figure>
+        </article>
+
+        <article class="experiment">
+          <h3>Egocentric Camera Tracking</h3>
+          <p>
+            We compare with EgoM2P, EgoMono4D, and VIPE on all sequences from the unseen Aria
+            Digital Twin dataset. ReViV predicts camera poses directly from RGB in a single
+            feed-forward pass. It obtains the lowest relative translation error and relative
+            rotation error in the comparison, with an average runtime of 0.7 seconds per clip.
+            VIPE obtains lower absolute translation error by using dense bundle adjustment over
+            the complete input clip, but requires 25.8 seconds per clip.
+          </p>
+          <figure class="two-column-figure">
+            <img src="assets/images/camera-trajectory-01.png" alt="Camera trajectory result for sequence one" loading="lazy" />
+            <img src="assets/images/camera-trajectory-02.png" alt="Camera trajectory result for sequence two" loading="lazy" />
+            <figcaption>
+              Ground-truth and predicted trajectories are visualized for representative
+              egocentric sequences.
+            </figcaption>
+          </figure>
+          <figure class="video-comparison">
+            <div class="video-stack">
+              <video
+                src="video/ppt-examples/camera-example-1.mp4"
+                poster="assets/images/ppt-posters/camera-example-1.png"
+                controls
+                muted
+                loop
+                playsinline
+                preload="metadata"
+              ></video>
+              <video
+                src="video/ppt-examples/camera-example-2.mp4"
+                poster="assets/images/ppt-posters/camera-example-2.png"
+                controls
+                muted
+                loop
+                playsinline
+                preload="metadata"
+              ></video>
+              <video
+                src="video/ppt-examples/camera-example-3.mp4"
+                poster="assets/images/ppt-posters/camera-example-3.png"
+                controls
+                muted
+                loop
+                playsinline
+                preload="metadata"
+              ></video>
+            </div>
+            <figcaption>
+              Each video compares ReViV with EgoM2P, EgoMono4D, and VIPE on the same egocentric
+              clip while preserving the original trajectory visualizations above.
+            </figcaption>
+          </figure>
+        </article>
+
+        <article class="experiment">
+          <h3>Egocentric Gaze Estimation</h3>
+          <p>
+            We predict normalized two-dimensional gaze locations on the unseen Aria Digital Twin
+            dataset. ReViV reduces mean squared error from 0.0311 for EgoM2P to 0.0211, indicating
+            that the additional human-motion modalities and scaled multimodal pretraining improve
+            the model's understanding of wearer attention and intent.
+          </p>
+          <figure class="two-column-figure gaze-figure">
+            <img src="assets/images/gaze-01.png" alt="Gaze estimation result one" loading="lazy" />
+            <img src="assets/images/gaze-02.png" alt="Gaze estimation result two" loading="lazy" />
+            <figcaption>
+              Predicted gaze follows the wearer's visual attention across changing scene context.
+            </figcaption>
+          </figure>
+          <figure class="video-comparison">
+            <div class="video-grid three-up">
+              <video
+                src="video/ppt-examples/gaze-example-1.mp4"
+                poster="assets/images/ppt-posters/gaze-example-1.png"
+                controls
+                muted
+                loop
+                playsinline
+                preload="metadata"
+              ></video>
+              <video
+                src="video/ppt-examples/gaze-example-2.mp4"
+                poster="assets/images/ppt-posters/gaze-example-2.png"
+                controls
+                muted
+                loop
+                playsinline
+                preload="metadata"
+              ></video>
+              <video
+                src="video/ppt-examples/gaze-example-3.mp4"
+                poster="assets/images/ppt-posters/gaze-example-3.png"
+                controls
+                muted
+                loop
+                playsinline
+                preload="metadata"
+              ></video>
+            </div>
+            <figcaption>
+              ReViV tracks gaze over time from egocentric RGB input, showing stable attention
+              estimates under changing scene context.
+            </figcaption>
+          </figure>
+        </article>
+
+        <article class="experiment">
+          <h3>Egocentric Video Depth Estimation</h3>
+          <p>
+            We evaluate temporally consistent video depth on Aria Digital Twin. ReViV
+            substantially improves over EgoM2P, reducing absolute relative error from 0.458 to
+            0.265 and increasing δ<sub>1.25</sub> accuracy from 30.3 to 56.5. EgoMono4D remains
+            more accurate because it inherits a specialized pretrained depth model, whereas ReViV
+            is trained from scratch with a discrete visual representation. ReViV nevertheless
+            runs more than 20 times faster, illustrating the efficiency of a unified feed-forward
+            model.
+          </p>
+          <figure class="video-comparison">
+            <p class="comparison-legend">
+              Columns from left to right: Ground Truth, Ours, EgoM2P, EgoMono4D.
+            </p>
+            <div class="video-stack depth-examples">
+              <video
+                src="video/ppt-examples/depth-example-1.mp4"
+                poster="assets/images/ppt-posters/depth-example-1.png"
+                controls
+                muted
+                loop
+                playsinline
+                preload="metadata"
+              ></video>
+              <video
+                src="video/ppt-examples/depth-example-2.mp4"
+                poster="assets/images/ppt-posters/depth-example-2.png"
+                controls
+                muted
+                loop
+                playsinline
+                preload="metadata"
+              ></video>
+              <video
+                src="video/ppt-examples/depth-example-3.mp4"
+                poster="assets/images/ppt-posters/depth-example-3.png"
+                controls
+                muted
+                loop
+                playsinline
+                preload="metadata"
+              ></video>
+            </div>
+            <figcaption>
+              ReViV produces temporally consistent depth predictions from the same RGB stream
+              used for the other reconstruction tasks.
+            </figcaption>
+          </figure>
+        </article>
+
+        <!--
+          FUTURE RESULT ASSETS:
+          Replace the PPT-extracted videos above with final synchronized public demos when
+          updated qualitative examples are available.
+        -->
+      </section>
+
+      <section id="citation" class="content-section page-container">
+        <h2>Citation</h2>
+        <div class="citation-block">
+          <button class="copy-button" type="button" data-copy-target="bibtex">Copy BibTeX</button>
+          <pre id="bibtex">
+            <!-- <code>@inproceedings{lyu2026reviv,
+  title     = {ReViV: Reconstructing the Viewer and the View
+               in 4D from Monocular Egocentric Video},
+  author    = {Lyu, Xiaozhong and Li, Gen and Qian, Zhiyin and
+               Zhang, Xucong and Pollefeys, Marc and Tang, Siyu},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2026}
+}</code> -->
+</pre>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="page-container">
+        <p>ReViV: Reconstructing the Viewer and the View in 4D from Monocular Egocentric Video</p>
+        <p>ECCV 2026</p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
