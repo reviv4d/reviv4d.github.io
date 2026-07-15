@@ -27,7 +27,7 @@ video { display: block; max-width: 100%; height: auto; background: #000000; }
  * #citation target after a smooth-scroll has already started, so BibTeX /
  * Citation anchor links land in the wrong place. Ratios come from posters.
  */
-.teaser-video-section video { aspect-ratio: 1748 / 1086; }
+.teaser-video-section video { aspect-ratio: 1566 / 1084; }
 .five-up video,
 .three-up video { aspect-ratio: 1 / 1; }
 .video-stack video { aspect-ratio: 5 / 1; }      /* camera examples: 2400x480 */
@@ -139,6 +139,14 @@ figcaption {
 .paper-text { max-width: 900px; margin-inline: auto; }
 .paper-text p { margin: 0 0 18px; text-align: justify; }
 .paper-text p:last-child { margin-bottom: 0; }
+.method-text .method-step { margin-bottom: 10px; }
+.method-substeps {
+  max-width: 900px;
+  margin: 0 auto 18px;
+  padding-left: 24px;
+}
+.method-substeps li { margin-bottom: 8px; text-align: justify; }
+.method-substeps li:last-child { margin-bottom: 0; }
 #overview h2:not(:first-child) { margin-top: 60px; }
 
 .section-introduction {
@@ -249,7 +257,7 @@ figcaption {
   h2 { font-size: 28px; }
   h3 { font-size: 21px; }
   h4 { font-size: 18px; }
-  .paper-text p, .experiment p { text-align: left; }
+  .paper-text p, .experiment p, .method-substeps li { text-align: left; }
   .two-column-figure { grid-template-columns: 1fr; }
   .two-column-figure figcaption { grid-column: 1; }
   .three-up { grid-template-columns: 1fr; }

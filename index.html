@@ -55,7 +55,7 @@
       <section class="content-section page-container teaser-video-section" aria-label="Teaser video">
         <figure class="video-figure">
           <video
-            src="video/teaser_reviv_gen.mp4"
+            src="video/teaser.mp4"
             controls
             autoplay
             muted
@@ -141,48 +141,64 @@
           <p>
             We propose a unified framework to jointly reconstruct human-centric (gaze, body, hand
             motion) and scene-centric (camera trajectories, depth maps) features from monocular
-            egocentric video. Because the viewer's body is heavily occluded in egocentric views,
-            deterministic estimation is inherently ambiguous. To address this, we formulate the
-            task as a generative modeling problem and approximate the multimodal joint
-            distribution through masked token prediction.
+            egocentric video. Because <strong>the viewer's body is heavily occluded in egocentric
+            views</strong>, deterministic estimation is inherently ambiguous, which renders the
+            underlying solution space highly multimodal. To address this, we
+            <strong>cast the problem as learning the joint probability distribution</strong> across
+            all observed and unobserved modalities, and approximate it through masked token
+            prediction.
           </p>
-          <p>
-            In practice, we approximate the joint distribution through masked multimodal token
-            prediction, which enables the model to learn both intra-modal temporal dynamics and
-            cross-modal correlations. During inference, the model samples the human and scene
-            states conditioned on the observed egocentric video.
-          </p>
-          <p>
+
+          <p class="method-step">
+            <strong>1. Unify every modality into discrete tokens.</strong>
             Modeling the joint distribution in the continuous domain is challenging due to the
             heterogeneity of the modalities, which range from dense pixel arrays to sparse
-            kinematic vectors. We therefore leverage a unified discrete latent interface to
-            homogenize the modalities. This discretization transforms the continuous regression
-            problem into a sequence modeling task defined over modality-specific discrete
-            vocabularies, ensuring that predictions for each modality remain constrained to their
-            respective codebook spaces.
+            kinematic vectors. We therefore leverage a <strong>unified discrete latent
+            interface</strong> to homogenize the modalities: for each modality, a modality-specific
+            VQ-VAE maps the continuous signal to a sequence of discrete tokens. To address the
+            severe scarcity of unified whole-body datasets, we design a <strong>decoupled,
+            dual-stream tokenization framework capable of leveraging disjoint body-only and
+            hand-only motion captures</strong>, and we quantize RGB and depth videos using Cosmos
+            Tokenizers. This discretization <strong>transforms the continuous regression problem
+            into a sequence modeling task</strong> defined over modality-specific discrete
+            vocabularies.
           </p>
-          <p>
-            Random multimodal masking serves as a multi-task training objective. By masking
-            partial sequences within a single modality, the network learns intra-modal motion
-            dynamics and strong temporal kinematic priors. By masking across different
-            modalities, the network learns robust cross-modal correlations. Together, these two
-            implicit tasks enable MGET to capture human kinematics and environment-conditioned
-            interaction patterns directly from the multimodal training distribution.
+
+          <p class="method-step">
+            <strong>2. Learn the joint distribution by masked prediction.</strong>
+            We approximate the joint distribution using a Masked Generative Egocentric Transformer
+            (MGET). Following the paradigm of masked modeling, during training we randomly sample a
+            binary mask across all modalities. Because a joint distribution can be factorized into
+            a sequence of conditionals, <strong>optimizing over all possible mask configurations
+            allows this objective to act as an efficient proxy for learning the underlying joint
+            distribution</strong>. Although optimized with a single cross-entropy loss, this random
+            multimodal masking strategy serves as a multi-task training objective:
           </p>
-          <p>
-            At inference time, the observed egocentric video context is provided as visible
-            tokens, while the human and scene state modalities are fully masked. We employ an
-            iterative parallel decoding strategy to progressively sample masked tokens,
-            reconstructing the complete, temporally coherent 4D state.
-          </p>
-          <p>
-            To achieve a metric-aligned 4D reconstruction, we introduce a lightweight alignment
-            step to map the relative scene depth into the metric domain. Specifically, we fit a
-            stable floor plane from the reconstructed scene geometry and use it to regularize the
-            metric scale. For RGB inputs that do not contain a visible floor, we leverage
-            off-the-shelf metric depth predictions from VIPE as an optional geometric anchor.
-            These alignment steps allow the reconstructed viewer and view to be placed within a
-            shared, metric-aligned 4D coordinate system.
+          <ul class="method-substeps">
+            <li>
+              <strong>Intra-modal dynamics</strong> — by masking partial sequences within a single
+              modality, the network learns intra-modal motion dynamics. This forces the model to
+              encode strong temporal kinematic priors, enabling it to generate continuous and
+              plausible motions without relying on explicit anatomical or smoothness regularizers.
+            </li>
+            <li>
+              <strong>Cross-modal correlations</strong> — by masking across different modalities,
+              the network learns robust cross-modal correlations, e.g., inferring unobserved
+              kinematics from visible context.
+            </li>
+          </ul>
+
+          <p class="method-step">
+            <strong>3. Reconstruct by conditioning on the video.</strong>
+            At inference time, we formulate a specific masking condition that provides the observed
+            egocentric video context as the visible tokens and treats the human and scene state
+            modalities as fully masked. We then <strong>employ an iterative parallel decoding
+            strategy to progressively sample masked tokens</strong>, reconstructing the complete,
+            temporally coherent 4D state. Finally, to achieve a metric-aligned 4D reconstruction,
+            we <strong>fit a stable floor plane from the reconstructed scene geometry</strong> to
+            regularize the metric scale — leveraging off-the-shelf metric depth from VIPE as an
+            optional anchor when no floor is visible — placing the reconstructed
+            <strong>viewer and view within a shared, metric-aligned 4D coordinate system</strong>.
           </p>
         </div>
       </section>
