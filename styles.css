@@ -263,7 +263,8 @@ figcaption {
   .two-column-figure { grid-template-columns: 1fr; }
   .two-column-figure figcaption { grid-column: 1; }
   .three-up { grid-template-columns: 1fr; }
-  .two-up { grid-template-columns: 1fr; }
+  /* .two-up (hand overlay) intentionally stays side by side at all widths
+     so the square videos never grow too large on narrow screens. */
   .five-up { grid-template-columns: repeat(2, 1fr); }
   .site-footer .page-container { flex-direction: column; gap: 3px; }
 }
