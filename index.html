@@ -66,6 +66,9 @@
           <figcaption>
             ReViV reconstructs viewer-centric human motion and view-centric
             scene geometry from a single egocentric RGB video in a unified feed-forward model.
+            For visualization, the displayed point cloud is the ground-truth point cloud, and the
+            first-frame camera pose together with the ground-truth camera intrinsics are provided
+            to place the reconstructed skeleton in the correct location.
           </figcaption>
         </figure>
       </section>
@@ -136,143 +139,51 @@
             view within a shared metric 4D coordinate system.
           </figcaption>
         </figure>
-
-        <div class="paper-text method-text">
-          <p>
-            We propose a unified framework to jointly reconstruct human-centric (gaze, body, hand
-            motion) and scene-centric (camera trajectories, depth maps) features from monocular
-            egocentric video. Because <strong>the viewer's body is heavily occluded in egocentric
-            views</strong>, deterministic estimation is inherently ambiguous, which renders the
-            underlying solution space highly multimodal. To address this, we
-            <strong>cast the problem as learning the joint probability distribution</strong> across
-            all observed and unobserved modalities, and approximate it through masked token
-            prediction.
-          </p>
-
-          <p class="method-step">
-            <strong>1. Unify every modality into discrete tokens.</strong>
-            Modeling the joint distribution in the continuous domain is challenging due to the
-            heterogeneity of the modalities, which range from dense pixel arrays to sparse
-            kinematic vectors. We therefore leverage a <strong>unified discrete latent
-            interface</strong> to homogenize the modalities: for each modality, a modality-specific
-            VQ-VAE maps the continuous signal to a sequence of discrete tokens. To address the
-            severe scarcity of unified whole-body datasets, we design a <strong>decoupled,
-            dual-stream tokenization framework capable of leveraging disjoint body-only and
-            hand-only motion captures</strong>, and we quantize RGB and depth videos using Cosmos
-            Tokenizers. This discretization <strong>transforms the continuous regression problem
-            into a sequence modeling task</strong> defined over modality-specific discrete
-            vocabularies.
-          </p>
-
-          <p class="method-step">
-            <strong>2. Learn the joint distribution by masked prediction.</strong>
-            We approximate the joint distribution using a Masked Generative Egocentric Transformer
-            (MGET). Following the paradigm of masked modeling, during training we randomly sample a
-            binary mask across all modalities. Because a joint distribution can be factorized into
-            a sequence of conditionals, <strong>optimizing over all possible mask configurations
-            allows this objective to act as an efficient proxy for learning the underlying joint
-            distribution</strong>. Although optimized with a single cross-entropy loss, this random
-            multimodal masking strategy serves as a multi-task training objective:
-          </p>
-          <ul class="method-substeps">
-            <li>
-              <strong>Intra-modal dynamics</strong> — by masking partial sequences within a single
-              modality, the network learns intra-modal motion dynamics. This forces the model to
-              encode strong temporal kinematic priors, enabling it to generate continuous and
-              plausible motions without relying on explicit anatomical or smoothness regularizers.
-            </li>
-            <li>
-              <strong>Cross-modal correlations</strong> — by masking across different modalities,
-              the network learns robust cross-modal correlations, e.g., inferring unobserved
-              kinematics from visible context.
-            </li>
-          </ul>
-
-          <p class="method-step">
-            <strong>3. Reconstruct by conditioning on the video.</strong>
-            At inference time, we formulate a specific masking condition that provides the observed
-            egocentric video context as the visible tokens and treats the human and scene state
-            modalities as fully masked. We then <strong>employ an iterative parallel decoding
-            strategy to progressively sample masked tokens</strong>, reconstructing the complete,
-            temporally coherent 4D state. Finally, to achieve a metric-aligned 4D reconstruction,
-            we <strong>fit a stable floor plane from the reconstructed scene geometry</strong> to
-            regularize the metric scale — leveraging off-the-shelf metric depth from VIPE as an
-            optional anchor when no floor is visible — placing the reconstructed
-            <strong>viewer and view within a shared, metric-aligned 4D coordinate system</strong>.
-          </p>
-        </div>
       </section>
 
       <section id="experiments" class="content-section page-container">
         <h2>Experiments</h2>
         <p class="section-introduction">
-          We evaluate ReViV on five complementary egocentric reconstruction tasks. All experiments
-          use two-second clips. RGB and depth are processed at 8 FPS and 256 × 256 resolution,
-          while camera, gaze, body, and hand signals retain their original 30 FPS sampling rate.
+          A single feed-forward model reconstructs five complementary egocentric modalities from
+          the same monocular RGB stream. The examples below highlight what stands out in each.
         </p>
 
         <article class="experiment">
           <h3>Egocentric Body Motion Reconstruction</h3>
           <p>
-            We evaluate on 3,185 clips from the unseen Aria Digital Twin dataset and compare with
-            EgoAllo and UniEgoMotion. Unlike both baselines, ReViV uses only monocular RGB and does
-            not require an input camera trajectory. ReViV achieves the best local pose accuracy,
-            motion realism, and semantic correspondence in the comparison. It is approximately
-            100 times faster than EgoAllo and more than 10 times faster than UniEgoMotion. The
-            results show that jointly learning camera motion and body dynamics avoids errors that
-            accumulate when tracking and pose estimation are handled as separate stages.
+            ReViV establishes a new state of the art for monocular egocentric body motion
+            reconstruction. Even without camera trajectories as input, it outperforms baselines
+            that rely on ground-truth cameras across local pose accuracy, semantic correspondence,
+            and motion realism, while being <strong>100× faster than EgoAllo and over 10× faster
+            than UniEgoMotion</strong> — demonstrating that global ego-motion can be effectively
+            learned implicitly from pure monocular video.
           </p>
           <figure class="video-comparison body-examples">
             <div class="body-example-group">
-              <h4>Body examples with VIPE camera input for baselines</h4>
-              <div class="body-example">
-                <h5>Example 1: baselines use RGB + VIPE camera; ReViV uses RGB only.</h5>
-                <div class="video-grid five-up">
-                  <div class="video-card"><video src="video/ppt-body/vipe-01-input.mp4" poster="assets/images/ppt-body-posters/vipe-01-input.png" controls muted loop playsinline preload="metadata"></video><p>Input RGB</p></div>
-                  <div class="video-card"><video src="video/ppt-body/vipe-01-egoallo.mp4" poster="assets/images/ppt-body-posters/vipe-01-egoallo.png" controls muted loop playsinline preload="metadata"></video><p>EgoAllo (RGB + VIPE camera)</p></div>
-                  <div class="video-card"><video src="video/ppt-body/vipe-01-uniegomotion.mp4" poster="assets/images/ppt-body-posters/vipe-01-uniegomotion.png" controls muted loop playsinline preload="metadata"></video><p>UniEgoMotion (RGB + VIPE camera)</p></div>
-                  <div class="video-card"><video src="video/ppt-body/vipe-01-ground-truth.mp4" poster="assets/images/ppt-body-posters/vipe-01-ground-truth.png" controls muted loop playsinline preload="metadata"></video><p>Ground Truth</p></div>
-                  <div class="video-card"><video src="video/ppt-body/vipe-01-ours.mp4" poster="assets/images/ppt-body-posters/vipe-01-ours.png" controls muted loop playsinline preload="metadata"></video><p>Ours (RGB only)</p></div>
-                </div>
-              </div>
-              <div class="body-example">
-                <h5>Example 2: baselines use RGB + VIPE camera; ReViV uses RGB only.</h5>
-                <div class="video-grid five-up">
-                  <div class="video-card"><video src="video/ppt-body/vipe-02-input.mp4" poster="assets/images/ppt-body-posters/vipe-02-input.png" controls muted loop playsinline preload="metadata"></video><p>Input RGB</p></div>
-                  <div class="video-card"><video src="video/ppt-body/vipe-02-egoallo.mp4" poster="assets/images/ppt-body-posters/vipe-02-egoallo.png" controls muted loop playsinline preload="metadata"></video><p>EgoAllo (RGB + VIPE camera)</p></div>
-                  <div class="video-card"><video src="video/ppt-body/vipe-02-uniegomotion.mp4" poster="assets/images/ppt-body-posters/vipe-02-uniegomotion.png" controls muted loop playsinline preload="metadata"></video><p>UniEgoMotion (RGB + VIPE camera)</p></div>
-                  <div class="video-card"><video src="video/ppt-body/vipe-02-ground-truth.mp4" poster="assets/images/ppt-body-posters/vipe-02-ground-truth.png" controls muted loop playsinline preload="metadata"></video><p>Ground Truth</p></div>
-                  <div class="video-card"><video src="video/ppt-body/vipe-02-ours.mp4" poster="assets/images/ppt-body-posters/vipe-02-ours.png" controls muted loop playsinline preload="metadata"></video><p>Ours (RGB only)</p></div>
-                </div>
+              <h4>Baselines given a VIPE camera trajectory</h4>
+              <p class="comparison-legend">
+                Columns from left to right: Input RGB · Ground Truth · Ours (RGB only) ·
+                EgoAllo (RGB + VIPE camera) · UniEgoMotion (RGB + VIPE camera).
+              </p>
+              <div class="video-stack">
+                <video src="video/ppt-examples/body-vipe-1.mp4" poster="assets/images/ppt-posters/body-vipe-1.png" controls muted loop playsinline preload="metadata"></video>
+                <video src="video/ppt-examples/body-vipe-2.mp4" poster="assets/images/ppt-posters/body-vipe-2.png" controls muted loop playsinline preload="metadata"></video>
               </div>
             </div>
             <div class="body-example-group">
-              <h4>Body examples with ground-truth camera input for baselines</h4>
-              <div class="body-example">
-                <h5>Example 1: baselines use RGB + GT camera trajectory; ReViV uses RGB only.</h5>
-                <div class="video-grid five-up">
-                  <div class="video-card"><video src="video/ppt-body/gtcam-01-input.mp4" poster="assets/images/ppt-body-posters/gtcam-01-input.png" controls muted loop playsinline preload="metadata"></video><p>Input RGB</p></div>
-                  <div class="video-card"><video src="video/ppt-body/gtcam-01-egoallo.mp4" poster="assets/images/ppt-body-posters/gtcam-01-egoallo.png" controls muted loop playsinline preload="metadata"></video><p>EgoAllo (RGB + GT camera trajectory)</p></div>
-                  <div class="video-card"><video src="video/ppt-body/gtcam-01-uniegomotion.mp4" poster="assets/images/ppt-body-posters/gtcam-01-uniegomotion.png" controls muted loop playsinline preload="metadata"></video><p>UniEgoMotion (RGB + GT camera trajectory)</p></div>
-                  <div class="video-card"><video src="video/ppt-body/gtcam-01-ground-truth.mp4" poster="assets/images/ppt-body-posters/gtcam-01-ground-truth.png" controls muted loop playsinline preload="metadata"></video><p>Ground Truth</p></div>
-                  <div class="video-card"><video src="video/ppt-body/gtcam-01-ours.mp4" poster="assets/images/ppt-body-posters/gtcam-01-ours.png" controls muted loop playsinline preload="metadata"></video><p>Ours (RGB only)</p></div>
-                </div>
-              </div>
-              <div class="body-example">
-                <h5>Example 2: baselines use RGB + GT camera trajectory; ReViV uses RGB only.</h5>
-                <div class="video-grid five-up">
-                  <div class="video-card"><video src="video/ppt-body/gtcam-04-input.mp4" poster="assets/images/ppt-body-posters/gtcam-04-input.png" controls muted loop playsinline preload="metadata"></video><p>Input RGB</p></div>
-                  <div class="video-card"><video src="video/ppt-body/gtcam-04-egoallo.mp4" poster="assets/images/ppt-body-posters/gtcam-04-egoallo.png" controls muted loop playsinline preload="metadata"></video><p>EgoAllo (RGB + GT camera trajectory)</p></div>
-                  <div class="video-card"><video src="video/ppt-body/gtcam-04-uniegomotion.mp4" poster="assets/images/ppt-body-posters/gtcam-04-uniegomotion.png" controls muted loop playsinline preload="metadata"></video><p>UniEgoMotion (RGB + GT camera trajectory)</p></div>
-                  <div class="video-card"><video src="video/ppt-body/gtcam-04-ground-truth.mp4" poster="assets/images/ppt-body-posters/gtcam-04-ground-truth.png" controls muted loop playsinline preload="metadata"></video><p>Ground Truth</p></div>
-                  <div class="video-card"><video src="video/ppt-body/gtcam-04-ours.mp4" poster="assets/images/ppt-body-posters/gtcam-04-ours.png" controls muted loop playsinline preload="metadata"></video><p>Ours (RGB only)</p></div>
-                </div>
+              <h4>Baselines given the ground-truth camera trajectory</h4>
+              <p class="comparison-legend">
+                Columns from left to right: Input RGB · Ground Truth · Ours (RGB only) ·
+                EgoAllo (RGB + GT camera) · UniEgoMotion (RGB + GT camera).
+              </p>
+              <div class="video-stack">
+                <video src="video/ppt-examples/body-gtcam-1.mp4" poster="assets/images/ppt-posters/body-gtcam-1.png" controls muted loop playsinline preload="metadata"></video>
+                <video src="video/ppt-examples/body-gtcam-2.mp4" poster="assets/images/ppt-posters/body-gtcam-2.png" controls muted loop playsinline preload="metadata"></video>
               </div>
             </div>
             <figcaption>
-              The first group uses VIPE camera trajectories as the baseline camera input; the
-              second group uses ground-truth camera trajectories for the baselines. ReViV is shown
-              with RGB-only input in both settings.
+              Each row merges one clip into a single strip. ReViV uses RGB only in both settings,
+              while the baselines are additionally provided a camera trajectory.
             </figcaption>
           </figure>
         </article>
@@ -280,25 +191,24 @@
         <article class="experiment">
           <h3>Egocentric Hand Motion Reconstruction</h3>
           <p>
-            We compare ReViV with HaMeR and Dyn-HaMR on HoloAssist, HOT3D, ARCTIC, and TACO. ReViV
-            achieves state-of-the-art local pose accuracy and global alignment across these
-            datasets while running approximately 100 times faster than HaMeR and more than 400
-            times faster than Dyn-HaMR. Its learned temporal priors produce plausible hand motion
-            through severe occlusion and intervals in which the hands are completely outside the
-            camera view.
+            ReViV outperforms both frame-based (HaMeR) and dynamic (Dyn-HaMR) baselines while
+            being <strong>100× faster than HaMeR and over 400× faster than Dyn-HaMR</strong>. It
+            leverages strong spatiotemporal priors learned from the joint distribution to produce
+            biomechanically plausible, temporally consistent hand movements under severe occlusion,
+            even when the hands are entirely unobservable from the egocentric view.
           </p>
-          <figure>
-            <img
-              src="assets/images/hand-results.png"
-              alt="ReViV hand reconstruction results under severe occlusion"
-              loading="lazy"
-              width="2000"
-              height="1125"
-            />
+          <figure class="video-comparison">
+            <p class="comparison-legend">
+              Columns from left to right: Input RGB · Ground Truth · Ours · HaMeR · Dyn-HaMR.
+            </p>
+            <div class="video-stack">
+              <video src="video/ppt-examples/hand-example-1.mp4" poster="assets/images/ppt-posters/hand-example-1.png" controls muted loop playsinline preload="metadata"></video>
+              <video src="video/ppt-examples/hand-example-2.mp4" poster="assets/images/ppt-posters/hand-example-2.png" controls muted loop playsinline preload="metadata"></video>
+              <video src="video/ppt-examples/hand-example-3.mp4" poster="assets/images/ppt-posters/hand-example-3.png" controls muted loop playsinline preload="metadata"></video>
+            </div>
             <figcaption>
-              ReViV generates temporally stable hand motion across sampled, non-consecutive
-              frames, including intervals where the hands are occluded or outside the field of
-              view.
+              Each clip is merged into a single strip. ReViV stays temporally stable across
+              occlusions and out-of-view intervals from RGB input alone.
             </figcaption>
           </figure>
         </article>
@@ -306,12 +216,10 @@
         <article class="experiment">
           <h3>Egocentric Camera Tracking</h3>
           <p>
-            We compare with EgoM2P, EgoMono4D, and VIPE on all sequences from the unseen Aria
-            Digital Twin dataset. ReViV predicts camera poses directly from RGB in a single
-            feed-forward pass. It obtains the lowest relative translation error and relative
-            rotation error in the comparison, with an average runtime of 0.7 seconds per clip.
-            VIPE obtains lower absolute translation error by using dense bundle adjustment over
-            the complete input clip, but requires 25.8 seconds per clip.
+            Unlike methods that rely on explicit geometric constraints, ReViV predicts camera
+            poses <strong>directly from egocentric RGB input end-to-end</strong>. It achieves the
+            lowest relative translation and rotation error among all methods, predicting camera
+            poses in a single feed-forward pass without geometric post-processing.
           </p>
           <figure class="two-column-figure">
             <img src="assets/images/camera-trajectory-01.png" alt="Camera trajectory result for sequence one" loading="lazy" width="1298" height="1298" />
@@ -361,10 +269,8 @@
         <article class="experiment">
           <h3>Egocentric Gaze Estimation</h3>
           <p>
-            We predict normalized two-dimensional gaze locations on the unseen Aria Digital Twin
-            dataset. ReViV reduces mean squared error from 0.0311 for EgoM2P to 0.0211, indicating
-            that the additional human-motion modalities and scaled multimodal pretraining improve
-            the model's understanding of wearer attention and intent.
+            ReViV predicts 2D gaze locations from egocentric video and achieves
+            <strong>significantly lower error compared to EgoM2P on unseen data</strong>.
           </p>
           <figure class="two-column-figure gaze-figure">
             <img src="assets/images/gaze-01.png" alt="Gaze estimation result one" loading="lazy" width="1408" height="1408" />
@@ -413,13 +319,10 @@
         <article class="experiment">
           <h3>Egocentric Video Depth Estimation</h3>
           <p>
-            We evaluate temporally consistent video depth on Aria Digital Twin. ReViV
-            substantially improves over EgoM2P, reducing absolute relative error from 0.458 to
-            0.265 and increasing δ<sub>1.25</sub> accuracy from 30.3 to 56.5. EgoMono4D remains
-            more accurate because it inherits a specialized pretrained depth model, whereas ReViV
-            is trained from scratch with a discrete visual representation. ReViV nevertheless
-            runs more than 20 times faster, illustrating the efficiency of a unified feed-forward
-            model.
+            Trained from scratch without depth-expert priors, ReViV significantly outperforms
+            EgoM2P on the unseen dataset. While it falls behind EgoMono4D — which inherits strong
+            depth-specific priors — ReViV is <strong>substantially more efficient, achieving over
+            20× faster inference</strong>.
           </p>
           <figure class="video-comparison">
             <p class="comparison-legend">
