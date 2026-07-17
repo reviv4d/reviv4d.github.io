@@ -143,10 +143,6 @@
 
       <section id="experiments" class="content-section page-container">
         <h2>Experiments</h2>
-        <p class="section-introduction">
-          A single feed-forward model reconstructs five complementary egocentric modalities from
-          the same monocular RGB stream. The examples below highlight what stands out in each.
-        </p>
 
         <article class="experiment">
           <h3>Egocentric Body Motion Reconstruction</h3>
@@ -209,6 +205,21 @@
             <figcaption>
               Each clip is merged into a single strip. ReViV stays temporally stable across
               occlusions and out-of-view intervals from RGB input alone.
+            </figcaption>
+          </figure>
+          <figure class="video-comparison">
+            <p class="comparison-legend">
+              <span style="color:#ff0000;font-weight:600;">Red</span>: Ground Truth ·
+              <span style="color:#0000ff;font-weight:600;">Blue</span>: Ours.
+            </p>
+            <div class="video-grid two-up">
+              <video src="video/hand_overlay/subject3_ego-k2-7_04-0_hand_vis.mp4" poster="assets/images/ppt-posters/hand-overlay-1.png" controls muted loop playsinline preload="metadata"></video>
+              <video src="video/hand_overlay/subject3_ego-o2-1_04-0_hand_vis.mp4" poster="assets/images/ppt-posters/hand-overlay-2.png" controls muted loop playsinline preload="metadata"></video>
+            </div>
+            <figcaption>
+              Reconstructed hands projected back onto the egocentric video using the ground-truth
+              camera intrinsics. The predicted 2D keypoints align closely with the ground truth,
+              confirming that ReViV recovers metrically consistent hand poses in the camera frame.
             </figcaption>
           </figure>
         </article>

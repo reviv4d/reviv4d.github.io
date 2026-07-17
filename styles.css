@@ -29,7 +29,8 @@ video { display: block; max-width: 100%; height: auto; background: #000000; }
  */
 .teaser-video-section video { aspect-ratio: 1566 / 1084; }
 .five-up video,
-.three-up video { aspect-ratio: 1 / 1; }
+.three-up video,
+.two-up video { aspect-ratio: 1 / 1; }
 .video-stack video { aspect-ratio: 5 / 1; }      /* camera examples: 2400x480 */
 .depth-examples video { aspect-ratio: 4 / 1; }   /* depth examples: 1024x256 */
 a { color: var(--link); text-underline-offset: 3px; }
@@ -186,6 +187,7 @@ figcaption {
   width: 100%;
   border: 1px solid var(--border);
 }
+.two-up { grid-template-columns: repeat(2, 1fr); }
 .three-up { grid-template-columns: repeat(3, 1fr); }
 .five-up {
   grid-template-columns: repeat(5, 1fr);
@@ -261,6 +263,7 @@ figcaption {
   .two-column-figure { grid-template-columns: 1fr; }
   .two-column-figure figcaption { grid-column: 1; }
   .three-up { grid-template-columns: 1fr; }
+  .two-up { grid-template-columns: 1fr; }
   .five-up { grid-template-columns: repeat(2, 1fr); }
   .site-footer .page-container { flex-direction: column; gap: 3px; }
 }
