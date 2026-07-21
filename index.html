@@ -64,11 +64,10 @@
             preload="metadata"
           ></video>
           <figcaption>
-            ReViV reconstructs viewer-centric human motion and view-centric
-            scene geometry from a single egocentric RGB video in a unified feed-forward model.
-            For visualization, the displayed point cloud is the ground-truth point cloud, and the
-            first-frame camera pose together with the ground-truth camera intrinsics are provided
-            to place the reconstructed skeleton in the correct location.
+            ReViV reconstructs viewer-centric human motion (body, hand, and gaze) and view-centric
+            scene geometry (camera and depth) from a single egocentric RGB video in a unified feed-forward model.
+            For visualization, the initial camera pose and camera intrinsics are estimated with
+            <a href="https://arxiv.org/abs/2409.06704" target="_blank" rel="noopener">GeoCalib</a>.
           </figcaption>
         </figure>
       </section>
@@ -195,31 +194,24 @@
           </p>
           <figure class="video-comparison">
             <p class="comparison-legend">
-              Columns from left to right: Input RGB · Ground Truth · Ours · HaMeR · Dyn-HaMR.
+              Left: Input RGB. &nbsp;Remaining columns from left to right:
+              Ground Truth · ReViV (Ours) · HaMeR · Dyn-HaMR. &nbsp;Within each column,
+              the top view is the 3D hand reconstruction rendered from a third-person
+              viewpoint and the bottom view is that reconstruction reprojected onto the
+              egocentric frame; the ground-truth hands are overlaid in every method column
+              for reference.
             </p>
-            <div class="video-stack">
-              <video src="video/ppt-examples/hand-example-1.mp4" poster="assets/images/ppt-posters/hand-example-1.png" controls muted loop playsinline preload="metadata"></video>
-              <video src="video/ppt-examples/hand-example-2.mp4" poster="assets/images/ppt-posters/hand-example-2.png" controls muted loop playsinline preload="metadata"></video>
-              <video src="video/ppt-examples/hand-example-3.mp4" poster="assets/images/ppt-posters/hand-example-3.png" controls muted loop playsinline preload="metadata"></video>
+            <div class="video-stack hand-examples">
+              <video src="video/hand-examples/hand-example-espressomachine.mp4" controls muted loop playsinline preload="metadata"></video>
+              <video src="video/hand-examples/hand-example-mixer.mp4" controls muted loop playsinline preload="metadata"></video>
             </div>
             <figcaption>
-              Each clip is merged into a single strip. ReViV stays temporally stable across
-              occlusions and out-of-view intervals from RGB input alone.
-            </figcaption>
-          </figure>
-          <figure class="video-comparison">
-            <p class="comparison-legend">
-              <span style="color:#ff0000;font-weight:600;">Red</span>: Ground Truth ·
-              <span style="color:#0000ff;font-weight:600;">Blue</span>: Ours.
-            </p>
-            <div class="video-grid two-up">
-              <video src="video/hand_overlay/subject3_ego-k2-7_04-0_hand_vis.mp4" poster="assets/images/ppt-posters/hand-overlay-1.png" controls muted loop playsinline preload="metadata"></video>
-              <video src="video/hand_overlay/subject3_ego-o2-1_04-0_hand_vis.mp4" poster="assets/images/ppt-posters/hand-overlay-2.png" controls muted loop playsinline preload="metadata"></video>
-            </div>
-            <figcaption>
-              Reconstructed hands projected back onto the egocentric video using the ground-truth
-              camera intrinsics. The predicted 2D keypoints align closely with the ground truth,
-              confirming that ReViV recovers metrically consistent hand poses in the camera frame.
+              Two ARCTIC sequences. For each, the enlarged input RGB video is shown on the
+              left, followed by the ground truth and the three reconstructions. The 3D
+              renderings (top) and their egocentric reprojections (bottom) show that ReViV
+              recovers biomechanically plausible, temporally consistent hand poses that align
+              closely with the ground truth, staying stable under severe occlusion and
+              out-of-view intervals from RGB input alone.
             </figcaption>
           </figure>
         </article>

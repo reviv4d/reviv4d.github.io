@@ -27,12 +27,13 @@ video { display: block; max-width: 100%; height: auto; background: #000000; }
  * #citation target after a smooth-scroll has already started, so BibTeX /
  * Citation anchor links land in the wrong place. Ratios come from posters.
  */
-.teaser-video-section video { aspect-ratio: 1566 / 1084; }
+.teaser-video-section video { aspect-ratio: 2064 / 1062; }
 .five-up video,
 .three-up video,
 .two-up video { aspect-ratio: 1 / 1; }
 .video-stack video { aspect-ratio: 5 / 1; }      /* camera examples: 2400x480 */
 .depth-examples video { aspect-ratio: 4 / 1; }   /* depth examples: 1024x256 */
+.hand-examples video { aspect-ratio: 3 / 1; }    /* hand examples: 2400x800 */
 a { color: var(--link); text-underline-offset: 3px; }
 .page-container { width: min(calc(100% - 40px), var(--width)); margin-inline: auto; }
 
