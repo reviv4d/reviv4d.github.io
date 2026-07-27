@@ -222,6 +222,7 @@ figcaption {
 .gaze-figure img { aspect-ratio: 1; object-fit: contain; }
 
 .citation-block { position: relative; max-width: 850px; margin: 0 auto; }
+.citation-intro { max-width: 850px; margin: 24px auto; }
 .citation-block pre {
   overflow-x: auto;
   margin: 0;

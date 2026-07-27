@@ -1,16 +1,18 @@
-const copyButton = document.querySelector("[data-copy-target]");
+const copyButtons = document.querySelectorAll("[data-copy-target]");
 
-copyButton?.addEventListener("click", async () => {
-  const target = document.getElementById(copyButton.dataset.copyTarget);
-  if (!target) return;
+copyButtons.forEach((copyButton) => {
+  copyButton.addEventListener("click", async () => {
+    const target = document.getElementById(copyButton.dataset.copyTarget);
+    if (!target) return;
 
-  try {
-    await navigator.clipboard.writeText(target.innerText);
-    copyButton.textContent = "Copied";
-    window.setTimeout(() => { copyButton.textContent = "Copy BibTeX"; }, 1800);
-  } catch {
-    copyButton.textContent = "Select to copy";
-  }
+    try {
+      await navigator.clipboard.writeText(target.innerText);
+      copyButton.textContent = "Copied";
+      window.setTimeout(() => { copyButton.textContent = "Copy BibTeX"; }, 1800);
+    } catch {
+      copyButton.textContent = "Select to copy";
+    }
+  });
 });
 
 // Autoplay result videos only while they're on screen; pause when they leave.
